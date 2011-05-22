@@ -43,7 +43,7 @@ results in output like this
  </methodResponse>
 }}}
 
-when it should be an array of strings of keyword names instead of a single integer value of 1. In terms of XML-RPC, the response would have the array encapsulated as an XML-RPC response with an XML-RPC array.
+when it should be an array of strings of keyword names instead of a single integer value of 1. See local execution example below, for what kind of list (w/o XML) that it should present. In terms of XML-RPC, the response would have the array encapsulated as an XML-RPC response with an XML-RPC array.
 
 Sending request like this
 
@@ -75,7 +75,7 @@ Sending request like this
  </methodCall>
 }}}
 
-should not return something like this:
+should not return error message like this following XML. The XML response data structure is correct, but the data returned is not. For correct data to be returned, see the local execution example below for same method that presents the correct data for the same data structure (but not in XML form).
 
 {{{
 <?xml version="1.0"?>
