@@ -1,0 +1,49 @@
+#summary Usage Info
+
+= Usage Details =
+
+This generic remote library implementation is similar to the Python reference implementation in use but still slightly different. See the following for reference.
+
+http://code.google.com/p/robotframework/wiki/RemoteLibrary
+
+http://robotframework.googlecode.com/hg/tools/remoteserver/example/examplelibrary.py
+
+To use it, see  [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/exampleremoteserver.pl exampleremoteserver.pl] for details. 
+
+But basically to use it, you write a Perl script to load the remote library module along with your test library module, or you can opt to instead implement your test library code in this Perl script rather than loading it externally.
+
+Then in the Perl script, you instantiate the remote server passing it the name of the test library package/class to use, and optionally specify other parameters like server hostname/IP address, server port, and whether to allow remotely stopping server or not.
+
+Finally, you start the server by executing the start server method.
+
+{{{
+  #!/usr/bin/env perl
+
+  #use strict;
+  #use warnings;
+
+  use lib '.'; #add local path to Perl modules, etc.
+  #alternatively, for modules under lib subdirectory of local path...
+  #use lib 'lib';
+
+  #import & reference generic remote server for Robot Framework
+  use RobotRemoteServer;
+
+  # import & reference the Robot Framework Perl test library/module
+  use ExampleLibrary;
+  #or alternatively implement the test library in this file
+
+  #create instance of remote server with specified library
+  my $remote_svr = new RobotRemoteServer("ExampleLibrary");
+
+  $remote_svr->start_server();
+
+  #ending script/module return value to append below
+  1;
+}}}
+
+then you instan
+
+= Caveats =
+
+The remote library code currently doesn't work for XML-RPC, it can only be called locally. See DevelopmentNotesAndIssues for details.
