@@ -15,7 +15,7 @@ use ExampleLibrary;
 #or alternatively implement the test library in this file
 
 #create instance of remote server with specified library
-#my $remote_svr = new RobotRemoteServer("ExampleLibrary");
+my $remote_svr = new RobotRemoteServer("ExampleLibrary");
 
 #alternatively, specified like...
 #my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary.pm");
@@ -25,7 +25,7 @@ use ExampleLibrary;
 #my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary","my.domain.com",8080);
 
 #disable stopping of remote server remotely like this:
-my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary","localhost",8080,0);
+#my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary","localhost",8080,0);
 #by default, stopping server remotely is enabled (e.g. value of 1)
 
 #DEBUG showing details of local execution
