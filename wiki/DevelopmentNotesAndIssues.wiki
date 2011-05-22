@@ -43,7 +43,7 @@ results in output like this
  </methodResponse>
 }}}
 
-when it should be an array of strings of keyword names instead of a single integer value of 1.
+when it should be an array of strings of keyword names instead of a single integer value of 1. In terms of XML-RPC, the response would have the array encapsulated as an XML-RPC response with an XML-RPC array.
 
 Sending request like this
 
@@ -114,50 +114,109 @@ should not return something like this:
  </methodResponse>
 }}}
 
-shouldn't throw exception like this. Same occurs for calling other supported keywords.
+shouldn't throw exception like this. Same occurs for calling other supported keywords. In my debugging, this is what I see printed out to stdout:
 
-== Code doesn't work intended when executed locally rather than XML-RPC ==
+{{{
+  method = ARRAY(0x1d5599c)
+  RPC args:
+  
+  
+}}}
 
-The following is console output of code execution of the debug code followed by some test XML-RPC request made to same code paths. XML-RPC requests made via REST client browser plugin for Chrome.
+and I find that method appears to be an array of 16 elements with nothing in it (blank/null). The XML-RPC args is 1 element but blank as well. Method should always be single element, not array, and XML-RPC args should be 0 or more element array.
 
-We shouldn't see the HASH references being printed out. Rather it should be some scalar string/integer value being printed out.
+Review the code sources to see more details.
+
+To summarize here, it seems there is some issue using reflection over XML-RPC calls, as it seems to work fine locally. See next section.
+
+== Code appears to work fine when executed locally rather than over XML-RPC ==
+
+Whether executing locally or over XML-RPC, the code uses Perl reflection to do the job.
+
 {{{
   F:\Temp>perl exampleremoteserver.pl
-  Debugging info...
+Debugging info: showing details of local execution...
 
-  keywords:
-  rule
-  count_items_in_directory
-  find
-  strings_should_be_equal
-  stop_remote_server
+keywords:
+rule
+count_items_in_directory
+find
+strings_should_be_equal
+stop_remote_server
 
-  runkeyword:
+running keywords:
 
-  string equal:
+method = strings_should_be_equal
+RPC args:
+hello
+world
 
-  RPC args:
-  hello
-  world
+Comparing 'hello' to 'world'
+Return =>
+status => FAIL
+traceback => Given strings are not equal at ExampleLibrary.pm line 30.
 
-  Comparing 'ExampleLibrary' to 'hello'HASH(0x1c6133c)
+error => Given strings are not equal at ExampleLibrary.pm line 30.
 
-  count dir:
-
-  RPC args:
-  C:\Temp
-
-  HASH(0x1d1122c)
+output => Given strings are not equal at ExampleLibrary.pm line 30.
 
 
-  RPC args:
+method = count_items_in_directory
+RPC args:
+C:\Temp
 
-  RPC args:
+Return => 26
+status => PASS
+traceback =>
+error =>
+output =>
 
-  Terminating on signal SIGINT(2)
+Shutting down remote server/library, from Robot Framework/XML-RPC request, in 5
+seconds
+Return =>
+status => PASS
+traceback =>
+error =>
+output => NOTE: remote server shutting/shut down.
 
-  F:\Temp>
+Robot remote server started. Stop server with Ctrl+C, kill, etc. or XML-RPC meth
+od 'run_keyword' with parameter 'stop_remote_server'
+
+Debugging info: here is where we have XML-RPC problems with Perl reflection once
+ try use XML-RPC. As can see from runtime demo above, no issues using reflection
+ locally.
+
+Remote server/library shut down at 21May2011-22:37:31
+
+
+F:\Temp>
 }}}
+
+and here is an excerpt sample of what it would look like if we disabled stopping server remotely:
+
+{{{
+...
+Return =>
+status => PASS
+traceback =>
+error =>
+output => NOTE: remote server not configured to allow remote shutdowns. Your req
+uest has been ignored.
+
+Robot remote server started. Stop server with Ctrl+C, kill, etc. or XML-RPC meth
+od 'run_keyword' with parameter 'stop_remote_server'
+
+...get stdout msg for debug of XML-RPC calls like this...
+method = ARRAY(0x1da530c)
+RPC args:
+
+
+Terminating on signal SIGINT(2)
+
+F:\Temp>
+}}}
+
+See the script file executed for how the code is implemented for details.
 
 == How should the server work? ==
 
