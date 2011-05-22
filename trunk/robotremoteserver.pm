@@ -1,71 +1,34 @@
 #!/usr/bin/env perl
 
-################################################################################
-# This library is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU Lesser General Public License as published by the Free 
-# Software Foundation; either version 2.1 of the License, or (at your option) 
-# any later version.
-
-# This library is distributed in the hope that it will be useful, but WITHOUT 
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-# FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more 
-# details.
-
-# You should have received a copy of the GNU Lesser General Public License along 
-# with this library; if not, write to the Free Software Foundation, Inc., 
-# 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-################################################################################
-
-# Author: David Luu
-
-# RobotFramework Perl implementation of generic remote library server.
-# Based on RobotFramework spec at
-# http://code.google.com/p/robotframework/wiki/RemoteLibrary
-# http://robotframework.googlecode.com/svn/tags/robotframework-2.5.6/doc/userguide/RobotFrameworkUserGuide.html#remote-library-interface
-# http://robotframework.googlecode.com/svn/tags/robotframework-2.5.6/doc/userguide/RobotFrameworkUserGuide.html#dynamic-library-api
-
-# Uses Perl reflection to serve the dynamically loaded remote library/module
-# You may alternatively modify this starting code base to natively integrate
-# your Perl test library code into the server rather than load it dynamically
-# with reflection.
-
-# Development notes: other useful info for making working server
-# http://www.codeproject.com/KB/perl/camel_poop.aspx
-# http://www.netalive.org/tinkering/serious-perl/#oop_constructors
-
+#From http://code.google.com/p/plrobotremoteserver/
 package RobotRemoteServer;
 #use strict;
 #use warnings;
 
-use Frontier::Daemon; # XML-RPC server library
-# get from CPAN...
-# http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm
-# alternative XML-RPC module choice(s) for implementing the server...
+use Frontier::Daemon; #XML-RPC server library
+#get from CPAN...
+#http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm
+#alternatively can try implementing this server
+#with a different XML-RPC server library:
+#http://search.cpan.org/dist/RPC-XML/lib/RPC/XML/Server.pm
 
-# http://www.debian-administration.org/articles/422
-# http://www.blackperl.com/RPC::XML/
-# http://search.cpan.org/dist/RPC-XML/
-
-# Other possible modules to import for use, for code reflection
-# Class::MOP, Moose, Class::Inspector, Class:Sniff
-# http://stackoverflow.com/questions/1021713/how-do-i-loop-over-all-the-methods-of-a-class-in-perl
-# http://stackoverflow.com/questions/607282/whats-the-best-way-to-discover-all-subroutines-a-perl-module-has
-# Which works or works best for this particular server design? See code below.
-
+use threads; #for stop remote server
+use POSIX strftime; #for timestamps
+ 
 sub new {
-	my ($class, $lib, $addr, $port) = @_;
-	#set default host and port per Robot Framework spec
+	my ($class, $lib, $addr, $port, $enableStopSvr) = @_;
 	$addr = 'localhost' unless defined($addr);
 	$port = 8270 unless defined($port);
+	$enableStopSvr = 1 unless defined($enableStopSvr);
 	my $self = {
 		_addr => $addr,
 		_port => $port,
-		_lib => $lib
+		_lib => $lib,
+		_enableStopSvr => $enableStopSvr
 	};
 	bless $self, $class;
 	return $self;
 }
-# FYI, default URL for XML-RPC server is http://host:port/RPC2
 
 #accessor methods for members
 sub address {
@@ -86,7 +49,7 @@ sub library {
     return ( $self->{_lib} );
 }
 
-#Robot Framework remote server API methods, per the spec
+#Robot Framework remote server API methods
 sub get_keyword_names {
 	#based on code snippet from
 	#http://stackoverflow.com/questions/1021713/how-do-i-loop-over-all-the-methods-of-a-class-in-perl
@@ -96,17 +59,14 @@ sub get_keyword_names {
 	no strict 'refs';
 	my @methods = grep { defined &{$class . "::$_"} } keys %{$class . "::"};
 	push @methods, get_keyword_names($_) foreach @{$class . "::ISA"};
-	#add stop server method, which is implemented in the server for use
-	#by Robot Framework, so test library doesn't have to implement this
-	#method
 	push @methods, "stop_remote_server";
-	return @methods; #return array list of keyword names
+	return @methods;
 }
 
 sub run_keyword {
-	my ($self, $method, @rpcargs) = @_; #the keyword/method to run
+	my ($self, $method, @rpcargs) = @_; #the keyword to run
 	
-	#define return data structure, which should be a XML-RPC struct
+	#define return data structure
 	
 	#run keyword, & get return code, if any
 	#run keyword within eval, etc. so can catch a "die" exception call
@@ -128,23 +88,31 @@ sub run_keyword {
 	);
     
 	if($method eq "stop_remote_server"){
-		#once server working right, need to change code here to use 
-		#threads, so spawned thread will shutdown server after delay of 
-		#1 minute, etc. In the meantime, main thread will return XML-RPC 
-		#response to Robot Framework, per spec.
-		
-		$self->teardown(); #call another method to return result 1st
-		#sleep 60;
-		die ("Stop Remote Server called by Robot Framework.");
+		my $output = '';
+		if($self->{_enableStopSvr} == 0){
+			$output = 'NOTE: remote server not configured to allow remote shutdowns. Your request has been ignored.';
+		}else{
+			$output = 'NOTE: remote server shutting/shut down.';
+			my $thr = threads->create(\&doShutdown);
+		}
+		my %shutdown_result = (
+			status => 'PASS',
+			output => $output,
+			error => '',
+			traceback => '',
+			Return => '',
+			);
+		return \%shutdown_result;
 	}
 	#based on code snippet from
 	#http://en.wikipedia.org/wiki/Reflection_(computer_programming)#Perl
 	my $class = $self->{_lib};
 	my $retval;
 	
-	#DEBUG block
+	#DEBUG
+	print "method = ".$method."\n";
 	print "RPC args:\n";
-	foreach(@rpcargs){
+	foreach(@rpcargs){ 
 		print $_."\n";
 	}
 	print "\n";
@@ -180,32 +148,13 @@ sub start_server {
 	#return $svr;
 }
 
-#helper method to shutdown server per Robot Framework spec
-sub teardown {
-	my %shutdown_result = (
-		status => 'PASS',
-		output => 'Remote server shut down.',
-		error => '',
-		traceback => '',
-		Return => '',
-	);
-	return \%shutdown_result;
+sub doShutdown {
+	my $delay = 5; #let's arbitrarily set delay at 5 seconds
+	print "Shutting down remote server/library, from Robot Framework/XML-RPC request, in ".$delay." seconds\n";
+	sleep $delay;
+	print "Remote server/library shut down at ". strftime("%d%b%Y-%H:%M:%S\t",localtime(time()))."\n\n";
+	exit();
 }
-
-#additional non-required and not implemented server interface methods,
-#per Robot Framework spec...
-
-#sub get_keyword_arguments{
-#	my ($self, $method) = @_;
-	#use reflection? to return (array) list of arguments/parameters that
-	#the specified keyword (method) takes
-#}
-
-#sub get_keyword_documentation{
-#	my ($self, $method) = @_;
-	#use reflection? to return a string containing documentation for the 
-	#specified keyword (method)
-#}
 
 #ending script/module return value to append below
 1;

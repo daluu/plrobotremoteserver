@@ -1,32 +1,34 @@
 #!/usr/bin/env perl
 
-# This is an example test library for RobotFramework.org test framework,
-# for use with Perl remote server implementation. It is to be loaded
-# into remote server at runtime via code/module/class/method reflection.
-
+#class
 package ExampleLibrary;
 use File::Find::Rule;
 #use strict;
 #use warnings;
 
-#now implement keyword class methods below
+#now implement Robot Framework keyword class methods below
 
 sub count_items_in_directory{
-	my ($path) = @_;
+	my ($self, $path) = @_;
+	my $dirRules =  File::Find::Rule->new;
 	# count sub-directories in directory
-	my @subdirs = File::Find::Rule->directory->in($path);
+	$dirRules->directory;
+	$dirRules->not( File::Find::Rule->new->name( qr/^\.+$/ ) );
+	my @subdirs = $dirRules->in($path);
 	# count files in directory
-	my @files = File::Find::Rule->file->in($path);
-	# return total of files + dirs
+	my $fileRules =  File::Find::Rule->new;
+	$fileRules->file;
+	$fileRules->not( File::Find::Rule->new->name( qr/^\.+$/ ) );
+	my @files = $fileRules->in($path);
 	return scalar(@subdirs) + scalar(@files);
 }
 
 sub strings_should_be_equal{
-	my ($str1, $str2) = @_;
-        print "Comparing '$str1' to '$str2'";
+	my ($self, $str1, $str2) = @_;
+        print "Comparing '$str1' to '$str2'\n";
         if($str1 ne $str2){
 		die ("Given strings are not equal");
-	}#else equal = PASS
+	}
 }
 
 #ending script/module return value to append below
