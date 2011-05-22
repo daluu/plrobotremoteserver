@@ -14,7 +14,7 @@ But basically to use it, you write a Perl script to load the remote library modu
 
 Then in the Perl script, you instantiate the remote server passing it the name of the test library package/class to use, and optionally specify other parameters like server hostname/IP address, server port, and whether to allow remotely stopping server or not.
 
-Finally, you start the server by executing the start server method.
+Finally, you start the server by executing the start server method. Here is an excerpt of sample code:
 
 {{{
   #!/usr/bin/env perl
