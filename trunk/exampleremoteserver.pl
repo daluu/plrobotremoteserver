@@ -18,14 +18,14 @@ use ExampleLibrary;
 my $remote_svr = new RobotRemoteServer("ExampleLibrary");
 
 #alternatively, specified like...
-#my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary.pm");
-#my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary.pl");
+#my $remote_svr = new RobotRemoteServer("ExampleLibrary.pm");
+#my $remote_svr = new RobotRemoteServer("ExampleLibrary.pl");
 
 #set address & port like this
-#my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary","my.domain.com",8080);
+#my $remote_svr = new RobotRemoteServer("ExampleLibrary","my.domain.com",8080);
 
 #disable stopping of remote server remotely like this:
-#my $remote_svr = new RobotRemoteServer("ExampleRemoteLibrary","localhost",8080,0);
+#my $remote_svr = new RobotRemoteServer("ExampleLibrary","localhost",8080,0);
 #by default, stopping server remotely is enabled (e.g. value of 1)
 
 #DEBUG showing details of local execution
