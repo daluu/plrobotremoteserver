@@ -42,8 +42,6 @@ Finally, you start the server by executing the start server method. Here is an e
   1;
 }}}
 
-then you instan
-
 = Caveats =
 
 The remote library code currently doesn't work for XML-RPC, it can only be called locally. See DevelopmentNotesAndIssues for details.
