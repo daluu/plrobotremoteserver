@@ -18,7 +18,11 @@ Check out the source code, review it, then run code and try it out for yourself 
 
 == XML-RPC requests to methods don't work as intended ==
 
-Sending a request like this
+Making XML-RPC calls to the server:
+
+http://host:port/RPC2 where default host = localhost, port = 8270
+
+with a (POST data) request like this
 
 {{{
 <?xml version='1.0' encoding='UTF-8'?>
