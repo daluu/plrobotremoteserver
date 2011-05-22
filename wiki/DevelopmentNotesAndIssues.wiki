@@ -235,3 +235,7 @@ And should work similarly to the other remote server implementations. Python ver
 http://code.google.com/p/sharprobotremoteserver/
 
 http://code.google.com/p/jrobotremoteserver/
+
+== How to use the code ==
+
+See UsageInfo.
