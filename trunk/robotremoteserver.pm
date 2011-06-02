@@ -6,10 +6,12 @@ package RobotRemoteServer;
 #use warnings;
 
 use Frontier::Daemon; #XML-RPC server library
-#get from CPAN...
 #http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm
+
 #alternatively can try implementing this server
 #with a different XML-RPC server library:
+
+#use RPC::XML::Server;
 #http://search.cpan.org/dist/RPC-XML/lib/RPC/XML/Server.pm
 
 use threads; #for stop remote server
@@ -60,7 +62,7 @@ sub get_keyword_names {
 	my @methods = grep { defined &{$class . "::$_"} } keys %{$class . "::"};
 	push @methods, get_keyword_names($_) foreach @{$class . "::ISA"};
 	push @methods, "stop_remote_server";
-	return @methods;
+	return \@methods;
 }
 
 sub run_keyword {
@@ -135,18 +137,37 @@ sub run_keyword {
 #internal remote server methods
 #based on code snippet from
 #http://www.ibm.com/developerworks/webservices/library/ws-xpc1/#l3
+#and suggestions from
+#http://stackoverflow.com/questions/6086584/problems-with-perl-xml-rpc-in-combination-with-perl-reflection
 sub start_server {
 	my ($self) = @_;
 	my $svr = Frontier::Daemon->new(
-                                         methods => {
-					             get_keyword_names => \&get_keyword_names,
-						     run_keyword => \&run_keyword,
-			                           },
-					 LocalAddr => $self->{_addr},
-			                 LocalPort => $self->{_port},
-			                );
-	#return $svr;
+                  methods => {
+                  get_keyword_names => sub { $self->get_keyword_names(@_) },
+                  run_keyword => sub { $self->run_keyword(@_) },
+                  },
+                  LocalAddr => $self->{_addr},
+                  LocalPort => $self->{_port},
+                  );
+	#return $svr; # Never returns, stop server 
+	#w/ stop_remote_server keyword, or Ctrl+C, etc.
 }
+#RPC::XML version
+#NOTE: Code here untested to work or not
+#sub start_server {
+#	my ($self) = @_;
+#	$srv = RPC::XML::Server->new(host => $self->{_addr}, port => $self->{_port});
+
+	# Several of these, most likely:
+#	$srv->add_method({ name => 'get_keyword_names',
+#                           code => sub { $self->get_keyword_names(@_) },
+#                           signature => [ 'array' ] });
+#	$srv->add_method({ name => 'run_keyword',
+#                           code => sub { $self->run_keyword(@_) },
+#                           signature => [ 'struct', 'struct string', 'struct array' ] });
+#	$srv->server_loop; # Never returns, stop server 
+	#w/ stop_remote_server keyword, or Ctrl+C, etc.
+#}
 
 sub doShutdown {
 	my $delay = 5; #let's arbitrarily set delay at 5 seconds
