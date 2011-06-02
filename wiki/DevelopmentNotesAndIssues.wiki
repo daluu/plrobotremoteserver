@@ -139,7 +139,7 @@ my $svr = Frontier::Daemon->new(
                   },
 }}}
 
-and this is how code is called for remote execution:
+and this is how code is called for local execution:
 
 {{{
 my $stat = $remote_svr->run_keyword("strings_should_be_equal","hello","hello");
@@ -149,7 +149,11 @@ and this is how code for run_keyword is implemented
 
 {{{
 sub run_keyword {
-	my ($self, $method, @rpcargs) = @_; #the keyword to run
+  my ($self, $method, @rpcargs) = @_; #the keyword to run
+  ...
+  #based on code snippet from
+  #http://en.wikipedia.org/wiki/Reflection_(computer_programming)#Perl
+  eval{$retval = $class->$method(@rpcargs);};
 }}}
 
 See the files exampleremoteserver.pl and robotremoteserver.pm for how server is implemented, and executed.
