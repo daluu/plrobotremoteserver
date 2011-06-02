@@ -129,7 +129,30 @@ The failure case for local output would look like this:
 
 It seems like an array or function/subroutine argument list reference issue when using over XML-RPC. Can't pinpoint the problem myself though.
 
-See the script file (exampleremoteserver.pl) executed for how the code is implemented for details.
+This is how code is instantiated for XML-RPC server:
+
+{{{
+my $svr = Frontier::Daemon->new(
+                  methods => {
+                  get_keyword_names => sub { $self->get_keyword_names(@_) },
+                  run_keyword => sub { $self->run_keyword(@_) },
+                  },
+}}}
+
+and this is how code is called for remote execution:
+
+{{{
+my $stat = $remote_svr->run_keyword("strings_should_be_equal","hello","hello");
+}}}
+
+and this is how code for run_keyword is implemented
+
+{{{
+sub run_keyword {
+	my ($self, $method, @rpcargs) = @_; #the keyword to run
+}}}
+
+See the files exampleremoteserver.pl and robotremoteserver.pm for how server is implemented, and executed.
 
 == How should the server work? ==
 
