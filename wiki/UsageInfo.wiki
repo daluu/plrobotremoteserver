@@ -42,4 +42,4 @@ Finally, you start the server by executing the start server method. Here is an e
   1;
 }}}
 
-To use the XML-RPC server, you have to use the URL format of http://host:port/RPC2. Once server is started, you can call test library keywords offered by the server from Robot Framework. Or you can test same using plain XML-RPC requests following the Robot Framework spec.
+To use the XML-RPC server, you have to use the web service URL format of http://host:port/RPC2. Once server is started, you can call test library keywords offered by the server from Robot Framework. Or you can test same using plain XML-RPC requests following the Robot Framework spec.
