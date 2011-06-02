@@ -15,7 +15,7 @@ use ExampleLibrary;
 #or alternatively implement the test library in this file
 
 #create instance of remote server with specified library
-my $remote_svr = new RobotRemoteServer("ExampleLibrary");
+#my $remote_svr = new RobotRemoteServer("ExampleLibrary");
 
 #alternatively, specified like...
 #my $remote_svr = new RobotRemoteServer("ExampleLibrary.pm");
@@ -25,44 +25,51 @@ my $remote_svr = new RobotRemoteServer("ExampleLibrary");
 #my $remote_svr = new RobotRemoteServer("ExampleLibrary","my.domain.com",8080);
 
 #disable stopping of remote server remotely like this:
-#my $remote_svr = new RobotRemoteServer("ExampleLibrary","localhost",8080,0);
+my $remote_svr = new RobotRemoteServer("ExampleLibrary","localhost",8270,0);
 #by default, stopping server remotely is enabled (e.g. value of 1)
 
 #DEBUG showing details of local execution
 print "Debugging info: showing details of local execution...\n\n";
 print "keywords:\n";
-my @kws = $remote_svr->get_keyword_names();
-foreach(@kws){
+print "---------\n";
+my $kws = $remote_svr->get_keyword_names();
+foreach(@$kws){
   print $_."\n";
 }
 print "\n";
 
 print "running keywords:\n";
+print "-----------------\n";
 print "\n";
 
-my @stat = $remote_svr->run_keyword("strings_should_be_equal","hello","world");
-foreach(@stat){
-  while ( my ($key, $value) = each(%$_) ) {
-        print "$key => $value\n";
-    }
+my $stat = $remote_svr->run_keyword("strings_should_be_equal","hello","world");
+print "output is...\n";
+while ( my ($key, $value) = each(%$stat) ) {
+  print "$key => $value\n";
 }
 print "\n";
 
-my @stat = $remote_svr->run_keyword("count_items_in_directory","C:\\Temp");
-foreach(@stat){
-  while ( my ($key, $value) = each(%$_) ) {
-        print "$key => $value\n";
-    }
+my $stat = $remote_svr->run_keyword("strings_should_be_equal","hello","hello");
+print "output is...\n";
+while ( my ($key, $value) = each(%$stat) ) {
+  print "$key => $value\n";
+}
+print "\n";
+
+my $stat = $remote_svr->run_keyword("count_items_in_directory",".");
+print "output is...\n";
+while ( my ($key, $value) = each(%$stat) ) {
+  print "$key => $value\n";
 }
 print "\n";
 
 #This has been tested to work offline. Comment out so can test server online, 
 #else this will shut down the server already before it starts.
-my @stat = $remote_svr->run_keyword("stop_remote_server");
-foreach(@stat){
-  while ( my ($key, $value) = each(%$_) ) {
-        print "$key => $value\n";
-    }
+print "attempting to execute stop_remote-server...\n";
+my $stat = $remote_svr->run_keyword("stop_remote_server");
+print "output is...\n";
+while ( my ($key, $value) = each(%$stat) ) {
+  print "$key => $value\n";
 }
 print "\n";
 
