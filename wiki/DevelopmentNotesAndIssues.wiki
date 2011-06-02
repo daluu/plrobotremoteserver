@@ -14,42 +14,17 @@ I don't see why we can't build a Perl version. I don't think it may be that hard
 
 Check out the source code, review it, then run code and try it out for yourself to see the current issues mentioned below.
 
+*Update:* Thanks to user ysth, for help with my post here to get the server more functional: http://stackoverflow.com/questions/6086584/problems-with-perl-xml-rpc-in-combination-with-perl-reflection
+
 = Issues with current code =
 
-== XML-RPC requests to methods don't work as intended ==
+== XML-RPC requests to methods may not work as intended ==
 
 Making XML-RPC calls to the server:
 
 http://host:port/RPC2 where default host = localhost, port = 8270
 
 with a (POST data) request like this
-
-{{{
-<?xml version='1.0' encoding='UTF-8'?>
- <methodCall>
-  <methodName>get_keyword_names</methodName>
-  <params></params>
- </methodCall>
-}}}
-
-results in output like this
-
-{{{
-<?xml version="1.0"?>
- <methodResponse>
-  <params>
-   <param>
-    <value>
-     <i4>1</i4>
-    </value>
-   </param>
-  </params>
- </methodResponse>
-}}}
-
-when it should be an array of strings of keyword names instead of a single integer value of 1. See local execution example below, for what kind of list (w/o XML) that it should present. In terms of XML-RPC, the response would have the array encapsulated as an XML-RPC response with an XML-RPC array.
-
-Sending request like this
 
 {{{
 <?xml version='1.0' encoding='UTF-8'?>
@@ -69,7 +44,7 @@ Sending request like this
         <string>hello</string>
        </value>
        <value>
-        <string>world</string>
+        <string>hello</string>
        </value>
       </data>
      </array>
@@ -83,144 +58,78 @@ should not return error message like this following XML. The XML response data s
 
 {{{
 <?xml version="1.0"?>
- <methodResponse>
-  <params>
-   <param>
-    <value>
-     <struct>
-      <member>
-       <name>Return</name>
-       <value><string></string></value>
-      </member>
-      <member>
-       <name>status</name>
-       <value><string>FAIL</string></value>
-      </member>
-      <member>
-       <name>traceback</name>
-       <value><string>Can't call method &quot;ARRAY(0x1d5599c)&quot; on an undefined value at RobotRemoteServer.pm line 98.
-</string></value>
-      </member>
-      <member>
-       <name>error</name>
-       <value><string>Can't call method &quot;ARRAY(0x1d5599c)&quot; on an undefined value at RobotRemoteServer.pm line 98.
-</string></value>
-      </member>
-      <member>
-       <name>output</name>
-       <value><string>Can't call method &quot;ARRAY(0x1d5599c)&quot; on an undefined value at RobotRemoteServer.pm line 98.
-</string></value>
-      </member>
-     </struct>
-    </value>
-   </param>
-  </params>
- </methodResponse>
+<methodResponse>
+ <params>
+  <param>
+   <value>
+    <struct>
+     <member><name>Return</name><value><string></string></value></member>
+     <member><name>status</name><value><string>FAIL</string></value></member>
+     <member><name>traceback</name><value><string>Given strings are not equal at ExampleLibrary.pm line 30.
+</string></value></member>
+     <member><name>error</name><value><string>Given strings are not equal at ExampleLibrary.pm line 30.
+</string></value></member>
+     <member><name>output</name><value><string>Given strings are not equal at ExampleLibrary.pm line 30.
+</string></value></member>
+    </struct>
+   </value>
+  </param>
+ </params>
+</methodResponse>
 }}}
 
-shouldn't throw exception like this. Same occurs for calling other supported keywords. In my debugging, this is what I see printed out to stdout:
+Same occurs for calling other supported keywords. In my debugging, this is what I see printed out to stdout when XML-RPC request is made:
 
 {{{
-  method = ARRAY(0x1d5599c)
+  method = strings_should_be_equal
   RPC args:
-  
-  
+  ARRAY(0x1da61dc)
+
+  Comparing 'ARRAY(0x1da61dc)' to ''
 }}}
 
-and I find that method appears to be an array of 16 elements with nothing in it (blank/null). The XML-RPC args is 1 element but blank as well. Method should always be single element, not array, and XML-RPC args should be 0 or more element array.
-
-Review the code sources to see more details.
-
-To summarize here, it seems there is some issue using reflection over XML-RPC calls, as it seems to work fine locally. See next section.
-
-== Code appears to work fine when executed locally rather than over XML-RPC ==
-
-Whether executing locally or over XML-RPC, the code uses Perl reflection to do the job.
+whereas local execution (non-XML-RPC request) output shows correct behavior of:
 
 {{{
-  F:\Temp>perl exampleremoteserver.pl
-Debugging info: showing details of local execution...
+  method = strings_should_be_equal
+  RPC args:
+  hello
+  hello
 
-keywords:
-rule
-count_items_in_directory
-find
-strings_should_be_equal
-stop_remote_server
-
-running keywords:
-
-method = strings_should_be_equal
-RPC args:
-hello
-world
-
-Comparing 'hello' to 'world'
-Return =>
-status => FAIL
-traceback => Given strings are not equal at ExampleLibrary.pm line 30.
-
-error => Given strings are not equal at ExampleLibrary.pm line 30.
-
-output => Given strings are not equal at ExampleLibrary.pm line 30.
-
-
-method = count_items_in_directory
-RPC args:
-C:\Temp
-
-Return => 26
-status => PASS
-traceback =>
-error =>
-output =>
-
-Shutting down remote server/library, from Robot Framework/XML-RPC request, in 5
-seconds
-Return =>
-status => PASS
-traceback =>
-error =>
-output => NOTE: remote server shutting/shut down.
-
-Robot remote server started. Stop server with Ctrl+C, kill, etc. or XML-RPC meth
-od 'run_keyword' with parameter 'stop_remote_server'
-
-Debugging info: here is where we have XML-RPC problems with Perl reflection once
- try use XML-RPC. As can see from runtime demo above, no issues using reflection
- locally.
-
-Remote server/library shut down at 21May2011-22:37:31
-
-
-F:\Temp>
+  Comparing 'hello' to 'hello'
+  output is...
+  Return =>
+  status => PASS
+  traceback =>
+  error =>
+  output =>
 }}}
 
-and here is an excerpt sample of what it would look like if we disabled stopping server remotely:
+*NOTE:* that the member => value shown for local execution will not show for debug output of XML-RPC request. But you can see same result as an XML-RPC response in that case.
+
+The failure case for local output would look like this:
 
 {{{
-...
-Return =>
-status => PASS
-traceback =>
-error =>
-output => NOTE: remote server not configured to allow remote shutdowns. Your req
-uest has been ignored.
 
-Robot remote server started. Stop server with Ctrl+C, kill, etc. or XML-RPC meth
-od 'run_keyword' with parameter 'stop_remote_server'
+  method = strings_should_be_equal
+  RPC args:
+  hello
+  world
 
-...get stdout msg for debug of XML-RPC calls like this...
-method = ARRAY(0x1da530c)
-RPC args:
+  Comparing 'hello' to 'world'
+  output is...
+  Return =>
+  status => FAIL
+  traceback => Given strings are not equal at ExampleLibrary.pm line 30.
 
+  error => Given strings are not equal at ExampleLibrary.pm line 30.
 
-Terminating on signal SIGINT(2)
-
-F:\Temp>
+  output => Given strings are not equal at ExampleLibrary.pm line 30.
 }}}
 
-See the script file executed for how the code is implemented for details.
+It seems like an array or function/subroutine argument list reference issue when using over XML-RPC. Can't pinpoint the problem myself though.
+
+See the script file (exampleremoteserver.pl) executed for how the code is implemented for details.
 
 == How should the server work? ==
 
