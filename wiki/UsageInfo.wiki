@@ -8,6 +8,8 @@ http://code.google.com/p/robotframework/wiki/RemoteLibrary
 
 http://robotframework.googlecode.com/hg/tools/remoteserver/example/examplelibrary.py
 
+Remote server requires the [http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm Frontier XML-RPC Daemon Perl module]. It can also be modified to use [http://search.cpan.org/dist/RPC-XML/lib/RPC/XML/Server.pm RPC::XML::Server] module instead, though this version hasn't been tested. I've found it easier to install and get up and running with the Frontier module.
+
 To use it, see  [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/exampleremoteserver.pl exampleremoteserver.pl] for details. 
 
 But basically to use it, you write a Perl script to load the remote library module along with your test library module, or you can opt to instead implement your test library code in this Perl script rather than loading it externally.
@@ -42,4 +44,55 @@ Finally, you start the server by executing the start server method. Here is an e
   1;
 }}}
 
-To use the XML-RPC server, you have to use the web service URL format of http://host:port/RPC2. Once server is started, you can call test library keywords offered by the server from Robot Framework. Or you can test same using plain XML-RPC requests following the Robot Framework spec.
+To use the XML-RPC server, you have to use the web service URL format of http://host:port/RPC2. Once server is started, you can call test library keywords offered by the server from Robot Framework. 
+
+=Testing the example remote library=
+
+Run 
+
+  `perl exampleremoteserver.pl`
+
+Then run the [http://robotframework.googlecode.com/svn/trunk/tools/remoteserver/example/remote_tests.html example tests] for remote libraries/servers available from [http://www.robotframework.org Robot Framework] project.
+
+To test stop remote server functionality, you may wish to add a test case, test step, or test case/suite teardown like this:
+
+|| Test Case || Action || Argument ||
+|| Stop Server Test || Run Keyword || Stop Remote Server ||
+
+You can alternatively test using plain XML-RPC requests following the Robot Framework spec. That's how I've initially validated functionality.
+
+=Perl remote library interface with the generic remote server=
+
+The generic remote server uses Perl reflection to access the actual remote library. The remote library itself should be self contained in a "class" object or package to be loaded or referenced by the remote server. If you are not accustomed to object-oriented programming in Perl, now would be a good time.
+
+Alternatively, you may wish to integrate the library code into the remote server and make it non-generic w/o using Perl reflection. 
+
+The remote server includes keyword *stop_remote_server* so you don't have to implement that in the remote library.
+
+Remote library methods should conform to [http://www.robotframework.org Robot Framework] keyword API specification, meaning: methods should be named as *method_name()* rather than !MethodName() or methodName(); the underscore represents a space; the method is made available as a keyword in [http://www.robotframework.org Robot Framework] named *Method Name*. Alternatively, they might not have to follow this convention, but you would have to modify the remote server to be able to translate the Robot Framework keyword naming convention to the actual Perl method naming convention when XML-RPC calls are made to *run_keyword*.
+
+Additionally, the library's use of data types in keyword arguments or return values should conform to the [http://www.xmlrpc.com/spec XML-RPC] protocol and what is supported by [http://www.robotframework.org Robot Framework].
+
+==Designing new custom test libraries in Perl==
+
+For this case, you need only follow the Perl remote library interface guidelines when creating your test library for it to be callable from [http://www.robotframework.org Robot Framework].
+
+==Re-using existing Perl code or libraries for Robot Framework==
+
+For this case, you would need to write a wrapper module that provides the remote library functions/subroutines (or methods) encapsulated within a package (class) interface.
+
+=Known Issues=
+
+  * *get_keyword_names* may return extra Perl library methods that weren't intended to be used by [http://www.robotframework.org Robot Framework] (e.g. internal methods), so just ignore them. Bear in mind that if you don't debug the remote library, you won't notice this issue anyways as [http://www.robotframework.org Robot Framework] doesn't explicitly dump a list of available keywords for the end user to see. ([http://code.google.com/p/sharprobotremoteserver/issues/detail?id=5 issue 5]), except for library documentation generation with libdoc.py.
+
+  * keyword output will always be blank except in cases of exceptions being raised. Currently no real definition of what constitutes "output" from a keyword. ([http://code.google.com/p/sharprobotremoteserver/issues/detail?id=3 issue 3])
+
+  * remote library keywords will always return as PASS except in case of exceptions
+
+=Tips for Debugging=
+
+  * You can use a REST client (like popular browser extensions) to pass correct [http://www.xmlrpc.com/spec XML-RPC] requests (an HTTP POST with data payload in XML-RPC format) and validate correct XML response from remote library.
+
+  * You can use [http://www.robotframework.org Robot Framework] tests to make the XML-RPC calls and validate correct responses, etc. if you are not good with XML-RPC messaging.
+
+  * For library related issues, you can build other Perl scripts to call library for local execution rather than over XML-RPC server to make sure library works correctly.
