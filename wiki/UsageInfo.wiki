@@ -83,9 +83,9 @@ For this case, you would need to write a wrapper module that provides the remote
 
 =Known Issues=
 
-  * *get_keyword_names* may return extra Perl library methods that weren't intended to be used by [http://www.robotframework.org Robot Framework] (e.g. internal methods), so just ignore them. Bear in mind that if you don't debug the remote library, you won't notice this issue anyways as [http://www.robotframework.org Robot Framework] doesn't explicitly dump a list of available keywords for the end user to see. ([http://code.google.com/p/sharprobotremoteserver/issues/detail?id=5 issue 5]), except for library documentation generation with libdoc.py.
+  * *get_keyword_names* may return extra Perl library methods that weren't intended to be used by [http://www.robotframework.org Robot Framework] (e.g. internal methods), so just ignore them. Bear in mind that if you don't debug the remote library, you won't notice this issue anyways as [http://www.robotframework.org Robot Framework] doesn't explicitly dump a list of available keywords for the end user to see, except for library documentation generation with libdoc.py ([http://code.google.com/p/plrobotremoteserver/issues/detail?id=4 Issue 4])
 
-  * keyword output will always be blank except in cases of exceptions being raised. Currently no real definition of what constitutes "output" from a keyword. ([http://code.google.com/p/sharprobotremoteserver/issues/detail?id=3 issue 3])
+  * keyword output will always be blank except in cases of exceptions being raised. Currently no real definition of what constitutes "output" from a keyword. ([http://code.google.com/p/plrobotremoteserver/issues/detail?id=1 issue 1])
 
   * remote library keywords will always return as PASS except in case of exceptions
 
@@ -95,4 +95,4 @@ For this case, you would need to write a wrapper module that provides the remote
 
   * You can use [http://www.robotframework.org Robot Framework] tests to make the XML-RPC calls and validate correct responses, etc. if you are not good with XML-RPC messaging.
 
-  * For library related issues, you can build other Perl scripts to call library for local execution rather than over XML-RPC server to make sure library works correctly. See exampleremoteserver.pl for reference.
+  * For library related issues, you can build other Perl scripts to call library for local execution rather than over XML-RPC server to make sure library works correctly. See [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/exampleremoteserver.pl exampleremoteserver.pl] for reference.
