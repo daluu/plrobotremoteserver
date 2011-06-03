@@ -28,8 +28,9 @@ use ExampleLibrary;
 my $remote_svr = new RobotRemoteServer("ExampleLibrary","localhost",8270,0);
 #by default, stopping server remotely is enabled (e.g. value of 1)
 
-#DEBUG showing details of local execution
-print "Debugging info: showing details of local execution...\n\n";
+#DEBUG showing details of local execution / self test
+print "\n***Debugging info: showing details of local execution self test...***\n";
+print "(Comment out this code block in script if not needed)\n\n";
 print "keywords:\n";
 print "---------\n";
 my $kws = $remote_svr->get_keyword_names();
@@ -73,10 +74,12 @@ while ( my ($key, $value) = each(%$stat) ) {
 }
 print "\n";
 
+print "***Now starting server for actual use or debugging...***\n\n";
+
 #start remote server
 print "Robot remote server started. Stop server with Ctrl+C, kill, etc. or XML-RPC method 'run_keyword' with parameter 'stop_remote_server'\n\n";
 
-print "Debugging info: here is where we have XML-RPC problems with Perl reflection once try use XML-RPC. As can see from runtime demo above, no issues using reflection locally.\n\n";
+print "XML-RPC server debugging: here we print out info on XML-RPC calls to help trace problems. Comment out this line in code + debug lines in robotremoteserver.pm to disable debug info. Can mod to make debugging based on config flag setting.\n\n";
 
 $remote_svr->start_server();
 

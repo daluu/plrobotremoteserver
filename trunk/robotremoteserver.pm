@@ -144,7 +144,7 @@ sub start_server {
 	my $svr = Frontier::Daemon->new(
                   methods => {
                   get_keyword_names => sub { $self->get_keyword_names(@_) },
-                  run_keyword => sub { $self->run_keyword(@_) },
+                  run_keyword => sub { $self->run_keyword($_[0], @{$_[1]}) },
                   },
                   LocalAddr => $self->{_addr},
                   LocalPort => $self->{_port},
@@ -163,8 +163,8 @@ sub start_server {
 #                           code => sub { $self->get_keyword_names(@_) },
 #                           signature => [ 'array' ] });
 #	$srv->add_method({ name => 'run_keyword',
-#                           code => sub { $self->run_keyword(@_) },
-#                           signature => [ 'struct', 'struct string', 'struct array' ] });
+#                           code => sub { $self->run_keyword($_[0], @{$_[1]}) },
+#                           signature => [ 'struct array' ] });
 #	$srv->server_loop; # Never returns, stop server 
 	#w/ stop_remote_server keyword, or Ctrl+C, etc.
 #}
