@@ -95,4 +95,4 @@ For this case, you would need to write a wrapper module that provides the remote
 
   * You can use [http://www.robotframework.org Robot Framework] tests to make the XML-RPC calls and validate correct responses, etc. if you are not good with XML-RPC messaging.
 
-  * For library related issues, you can build other Perl scripts to call library for local execution rather than over XML-RPC server to make sure library works correctly.
+  * For library related issues, you can build other Perl scripts to call library for local execution rather than over XML-RPC server to make sure library works correctly. See exampleremoteserver.pl for reference.
