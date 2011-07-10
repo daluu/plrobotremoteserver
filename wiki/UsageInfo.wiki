@@ -80,7 +80,7 @@ Additionally, the library's use of data types in keyword arguments or return val
 
 ==Designing new custom test libraries in Perl==
 
-For this case, you need only follow the Perl remote library interface guidelines when creating your test library for it to be callable from [http://www.robotframework.org Robot Framework]. Use [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/examplerelibrary.pm examplelibrary.pm] as a model/template.
+For this case, you need only follow the Perl remote library interface guidelines when creating your test library for it to be callable from [http://www.robotframework.org Robot Framework]. Use [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/examplelibrary.pm examplelibrary.pm] as a model/template.
 
 ==Re-using existing Perl code or libraries for Robot Framework==
 
