@@ -30,12 +30,15 @@ Finally, you start the server by executing the start server method. Here is an e
 
   #import & reference generic remote server for Robot Framework
   use RobotRemoteServer;
+  # this is the robotremoteserver.pm file
 
-  # import & reference the Robot Framework Perl test library/module
+  # import & reference the Robot Framework Perl test library/module (package)
   use ExampleLibrary;
-  #or alternatively implement the test library in this file
+  # this is the examplelibrary.pm file
+  # or alternatively implement the test library in this file
 
-  #create instance of remote server with specified library
+
+  #create instance of remote server with specified library (package/module)
   my $remote_svr = new RobotRemoteServer("ExampleLibrary");
 
   $remote_svr->start_server();
@@ -44,7 +47,7 @@ Finally, you start the server by executing the start server method. Here is an e
   1;
 }}}
 
-To use the XML-RPC server, you have to use the web service URL format of http://host:port/RPC2. Once server is started, you can call test library keywords offered by the server from Robot Framework. 
+To query or communicate with the XML-RPC (remote library) server, you have to use the web service URL format of http://host:port/RPC2. This means that the URL to remote library for Robot Framework use will be of that format. Once server is started, you can call test library keywords offered by the server from Robot Framework. 
 
 =Testing the example remote library=
 
@@ -61,11 +64,13 @@ To test stop remote server functionality, you may wish to add a test case, test 
 
 You can alternatively test using plain XML-RPC requests following the Robot Framework spec. That's how I've initially validated functionality.
 
+*NOTE:* If you wish to test/use stop remote server functionality, you need to enable (or not disable) that feature when instantiating the server. See code comments in [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/exampleremoteserver.pl exampleremoteserver.pl] for details. By default, the sample script has the feature disabled, you have to make a modification to it to enable.
+
 =Perl remote library interface with the generic remote server=
 
 The generic remote server uses Perl reflection to access the actual remote library. The remote library itself should be self contained in a "class" object or package to be loaded or referenced by the remote server. If you are not accustomed to object-oriented programming in Perl, now would be a good time.
 
-Alternatively, you may wish to integrate the library code into the remote server and make it non-generic w/o using Perl reflection. 
+Alternatively, you may wish to integrate the library code into the remote server and make it non-generic without using Perl reflection. This would allow for a non or less object oriented approach for those that prefer it that way.
 
 The remote server includes keyword *stop_remote_server* so you don't have to implement that in the remote library.
 
@@ -75,7 +80,7 @@ Additionally, the library's use of data types in keyword arguments or return val
 
 ==Designing new custom test libraries in Perl==
 
-For this case, you need only follow the Perl remote library interface guidelines when creating your test library for it to be callable from [http://www.robotframework.org Robot Framework].
+For this case, you need only follow the Perl remote library interface guidelines when creating your test library for it to be callable from [http://www.robotframework.org Robot Framework]. Use [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/examplerelibrary.pm examplelibrary.pm] as a model/template.
 
 ==Re-using existing Perl code or libraries for Robot Framework==
 
@@ -95,4 +100,4 @@ For this case, you would need to write a wrapper module that provides the remote
 
   * You can use [http://www.robotframework.org Robot Framework] tests to make the XML-RPC calls and validate correct responses, etc. if you are not good with XML-RPC messaging.
 
-  * For library related issues, you can build other Perl scripts to call library for local execution rather than over XML-RPC server to make sure library works correctly. See [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/exampleremoteserver.pl exampleremoteserver.pl] for reference.
+  * For library related issues, you can build other Perl scripts to call library for local execution rather than over XML-RPC server to make sure library works correctly. See [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/exampleremoteserver.pl exampleremoteserver.pl] for reference, which makes sample local execution calls to the remote library methods/functions.
