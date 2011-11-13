@@ -1,6 +1,13 @@
 #!/usr/bin/env perl
 
-#From http://code.google.com/p/plrobotremoteserver/
+################################################################################
+# Perl generic remote library server for Robot Framework
+# From http://code.google.com/p/plrobotremoteserver/
+# Licensed under the GNU Lesser GPL
+# http://www.gnu.org/licenses/lgpl.txt
+# @author David Luu
+################################################################################
+
 package RobotRemoteServer;
 #use strict;
 #use warnings;
