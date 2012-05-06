@@ -47,7 +47,7 @@ Finally, you start the server by executing the start server method. Here is an e
   1;
 }}}
 
-To query or communicate with the XML-RPC (remote library) server, you have to use the web service URL format of http://host:port/RPC2. This means that the URL to remote library for Robot Framework use will be of that format. Once server is started, you can call test library keywords offered by the server from Robot Framework. 
+To query or communicate with the XML-RPC (remote library) server, you have to use the web service URL format of http://host:port/RPC2. This means that the URL to remote library for Robot Framework tests/use will be of that format. Once server is started, you can call test library keywords offered by the server from Robot Framework. 
 
 =Testing the example remote library=
 
@@ -55,7 +55,7 @@ Run
 
   `perl exampleremoteserver.pl`
 
-Then run the [http://robotframework.googlecode.com/svn/trunk/tools/remoteserver/example/remote_tests.html example tests] for remote libraries/servers available from [http://www.robotframework.org Robot Framework] project.
+Then run the [http://robotframework.googlecode.com/svn/trunk/tools/remoteserver/example/remote_tests.html example tests] for remote libraries/servers available from [http://www.robotframework.org Robot Framework] project. But do modify the remote server URL in the test case file to http://localhost:${PORT}/RPC2 before running the test.
 
 To test stop remote server functionality, you may wish to add a test case, test step, or test case/suite teardown like this:
 
