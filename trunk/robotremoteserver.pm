@@ -93,7 +93,7 @@ sub run_keyword {
 		output => '',
 		error => '',
 		traceback => '',
-		Return => '',
+		return => '',
 	);
     
 	if($method eq "stop_remote_server"){
@@ -109,7 +109,7 @@ sub run_keyword {
 			output => $output,
 			error => '',
 			traceback => '',
-			Return => '',
+			return => '',
 			);
 		return \%shutdown_result;
 	}
@@ -136,7 +136,7 @@ sub run_keyword {
 	}
 	#check retval for "undef", in which case, set return code = blank.
 	#Otherwise, set return code to retval.
-	$keyword_result{Return} = $retval if defined($retval);
+	$keyword_result{return} = $retval if defined($retval);
 	
 	return \%keyword_result;
 }
