@@ -12,17 +12,25 @@ package RobotRemoteServer;
 #use strict;
 #use warnings;
 
-use Frontier::Daemon; #XML-RPC server library
-#http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm
+use Frontier::Daemon; # XML-RPC server library
+# http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm
 
-#alternatively can try implementing this server
-#with a different XML-RPC server library:
+# alternatively can try implementing this server
+# with a different XML-RPC server library:
 
 #use RPC::XML::Server;
-#http://search.cpan.org/dist/RPC-XML/lib/RPC/XML/Server.pm
+# http://search.cpan.org/dist/RPC-XML/lib/RPC/XML/Server.pm
 
-use threads; #for stop remote server
-use POSIX strftime; #for timestamps
+# or any other Perl XML-RPC server implementation you can find on CPAN,
+# there seemed to be quite a few at last check.
+
+use threads; # for stop remote server
+use POSIX strftime; # for timestamps
+
+# for output redirection to Robot Framework
+use Capture::Tiny ':all';
+#use Capture::Tiny::Extended 'capture';
+# could also consider the other Tiny library
  
 sub new {
 	my ($class, $lib, $addr, $port, $enableStopSvr) = @_;
@@ -39,7 +47,7 @@ sub new {
 	return $self;
 }
 
-#accessor methods for members
+# accessor methods for members
 sub address {
     my ( $self, $addr ) = @_;
     $self->{_addr} = $addr if defined($addr);
@@ -58,12 +66,12 @@ sub library {
     return ( $self->{_lib} );
 }
 
-#Robot Framework remote server API methods
+# Robot Framework remote server API methods
 sub get_keyword_names {
-	#based on code snippet from
-	#http://stackoverflow.com/questions/1021713/how-do-i-loop-over-all-the-methods-of-a-class-in-perl
+	# based on code snippet from
+	# http://stackoverflow.com/questions/1021713/how-do-i-loop-over-all-the-methods-of-a-class-in-perl
 	my ($self) = @_;
-	my $class = $self->{_lib}; #keyword = class/module/package
+	my $class = $self->{_lib}; # keyword = class/module/package
 	eval "require $class";
 	no strict 'refs';
 	my @methods = grep { defined &{$class . "::$_"} } keys %{$class . "::"};
@@ -73,21 +81,18 @@ sub get_keyword_names {
 }
 
 sub run_keyword {
-	my ($self, $method, @rpcargs) = @_; #the keyword to run
+	my ($self, $method, @rpcargs) = @_; # keyword to run & its arguments
 	
-	#define return data structure
+	# define return data structure
 	
-	#run keyword, & get return code, if any
-	#run keyword within eval, etc. so can catch a "die" exception call
-	#in which case set status = fail, & pass along exception message
-	#as return data structure to Robot Framework
+	# run keyword, & get return code, if any
+	# run keyword within eval, etc. so can catch a "die" exception call
+	# in which case set status = fail, & pass along exception message
+	# as return data structure to Robot Framework
 
-	#since Perl has no concept of a real boolean (any positive or negative?
-	#number will be true, status always = pass, except for exceptions.
+	# since Perl has no concept of a real boolean (any positive or negative?
+	# number will be true, status always = pass, except for exceptions.
 	
-	#output & stack trace generally blank until we can figure out
-	#how to redirect output and pass along exception stack, etc.
-
 	my %keyword_result = (
 		status => 'PASS',
 		output => '',
@@ -113,39 +118,48 @@ sub run_keyword {
 			);
 		return \%shutdown_result;
 	}
-	#based on code snippet from
-	#http://en.wikipedia.org/wiki/Reflection_(computer_programming)#Perl
+	# based on code snippet from
+	# http://en.wikipedia.org/wiki/Reflection_(computer_programming)#Perl
+	# if wikipedia entry has Perl removed (as is now), review past revisions
+	# for the Perl snippet (e.g. ~ December 2011 is one example).
 	my $class = $self->{_lib};
-	my $retval;
+	my $retval; # expect to be a scalar or reference to a hash or array
 	
-	#DEBUG
-	print "method = ".$method."\n";
-	print "RPC args:\n";
-	foreach(@rpcargs){ 
-		print $_."\n";
+	#FOR DEBUG
+	#print "method = ".$method."\n";
+	#print "RPC args:\n";
+	#foreach(@rpcargs){ 
+		#print $_."\n";
+	#}
+	#print "\n";
+	
+	my $errorFlag = 0;
+	my ($stdout, $stderr) = capture {
+		eval{$retval = $class->$method(@rpcargs);};
+		if ($@){ # die/exception occurred
+			$keyword_result{status} = "FAIL";
+			$keyword_result{error} = $@;
+			$keyword_result{traceback} = $@;
+			$errorFlag = 1;
+		}
+	};
+	$keyword_result{output} = $stdout;
+	if($errorFlag == 0){ # normal execution
+		$keyword_result{error} = $stderr;
+		$keyword_result{traceback} = "";
 	}
-	print "\n";
-	
-	eval{$retval = $class->$method(@rpcargs);};
-	
-	if ($@){ #die/exception occurred
-		$keyword_result{status} = "FAIL";
-		$keyword_result{output} = $@;
-		$keyword_result{error} = $@;
-		$keyword_result{traceback} = $@;
-	}
-	#check retval for "undef", in which case, set return code = blank.
-	#Otherwise, set return code to retval.
+	# check retval for "undef", in which case, set return as ''
+	# Otherwise, set return to retval.
 	$keyword_result{return} = $retval if defined($retval);
 	
 	return \%keyword_result;
 }
 
-#internal remote server methods
-#based on code snippet from
-#http://www.ibm.com/developerworks/webservices/library/ws-xpc1/#l3
-#and suggestions from
-#http://stackoverflow.com/questions/6086584/problems-with-perl-xml-rpc-in-combination-with-perl-reflection
+# internal remote server methods
+# based on code snippet from
+# http://www.ibm.com/developerworks/webservices/library/ws-xpc1/#l3
+# and suggestions from
+# http://stackoverflow.com/questions/6086584/problems-with-perl-xml-rpc-in-combination-with-perl-reflection
 sub start_server {
 	my ($self) = @_;
 	my $svr = Frontier::Daemon->new(
@@ -157,10 +171,10 @@ sub start_server {
                   LocalPort => $self->{_port},
                   );
 	#return $svr; # Never returns, stop server 
-	#w/ stop_remote_server keyword, or Ctrl+C, etc.
+	# w/ stop_remote_server keyword, or Ctrl+C, etc.
 }
-#RPC::XML version
-#NOTE: Code here untested to work or not
+# RPC::XML version
+# NOTE: Code here untested to work or not
 #sub start_server {
 #	my ($self) = @_;
 #	$srv = RPC::XML::Server->new(host => $self->{_addr}, port => $self->{_port});
@@ -173,16 +187,16 @@ sub start_server {
 #                           code => sub { $self->run_keyword($_[0], eval{@{$_[1]}}) },
 #                           signature => [ 'struct array' ] });
 #	$srv->server_loop; # Never returns, stop server 
-	#w/ stop_remote_server keyword, or Ctrl+C, etc.
+	# w/ stop_remote_server keyword, or Ctrl+C, etc.
 #}
 
 sub doShutdown {
-	my $delay = 5; #let's arbitrarily set delay at 5 seconds
-	print "Shutting down remote server/library, from Robot Framework/XML-RPC request, in ".$delay." seconds\n";
+	my $delay = 5; # let's arbitrarily set delay at 5 seconds
+	print "Shutting down remote server/library, from Robot Framework/XML-RPC request, in ".$delay." seconds...\n\n";
 	sleep $delay;
-	print "Remote server/library shut down at ". strftime("%d%b%Y-%H:%M:%S\t",localtime(time()))."\n\n";
+	print "Remote server/library shut down at ". strftime("%d%b%Y-%H:%M:%S",localtime(time())).".\n\n";
 	exit();
 }
 
-#ending script/module return value to append below
+# ending script/module return value to append below
 1;
