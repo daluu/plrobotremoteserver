@@ -44,31 +44,30 @@ print "-----------------\n";
 print "\n";
 
 my $stat = $remote_svr->run_keyword("strings_should_be_equal","hello","world");
-print "output is...\n";
+print "output for 'strings_should_be_equal' with 'hello' and 'world' as arguments...\n";
 while ( my ($key, $value) = each(%$stat) ) {
   print "$key => $value\n";
 }
 print "\n";
 
 my $stat = $remote_svr->run_keyword("strings_should_be_equal","hello","hello");
-print "output is...\n";
+print "output for 'strings_should_be_equal' with 'hello' and 'hello' as arguments...\n";
 while ( my ($key, $value) = each(%$stat) ) {
   print "$key => $value\n";
 }
 print "\n";
 
 my $stat = $remote_svr->run_keyword("count_items_in_directory",".");
-print "output is...\n";
+print "output for 'count_items_in_directory' with current working directory as argument...\n";
 while ( my ($key, $value) = each(%$stat) ) {
   print "$key => $value\n";
 }
 print "\n";
 
-#This has been tested to work offline. Comment out so can test server online, 
-#else this will shut down the server already before it starts.
-print "attempting to execute stop_remote-server...\n";
+# This has been tested to work offline. Comment out so can test server online, 
+# else this will shut down the server already before it starts.
 my $stat = $remote_svr->run_keyword("stop_remote_server");
-print "output is...\n";
+print "attempting to execute stop_remote-server, output is...\n";
 while ( my ($key, $value) = each(%$stat) ) {
   print "$key => $value\n";
 }
@@ -78,8 +77,6 @@ print "***Now starting server for actual use or debugging...***\n\n";
 
 #start remote server
 print "Robot remote server started. Stop server with Ctrl+C, kill, etc. or XML-RPC method 'run_keyword' with parameter 'stop_remote_server'\n\n";
-
-print "XML-RPC server debugging: here we print out info on XML-RPC calls to help trace problems. Comment out this line in code + debug lines in robotremoteserver.pm to disable debug info. Can mod to make debugging based on config flag setting.\n\n";
 
 $remote_svr->start_server();
 
