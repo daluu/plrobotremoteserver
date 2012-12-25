@@ -78,7 +78,7 @@ print "***Now starting server for actual use or debugging...***\n\n";
 #start remote server
 print "Robot remote server started. Stop server with Ctrl+C, kill, etc. or XML-RPC method 'run_keyword' with parameter 'stop_remote_server'\n\n";
 
-$remote_svr->start_server();
+$remote_svr->start_server(); # now listening on HTTP resource path "/RPC2"
 
 #ending script/module return value to append below
 1;
