@@ -1,12 +1,16 @@
 #!/usr/bin/env perl
 
-#class
+# ~class
 package ExampleLibrary;
 use File::Find::Rule;
 #use strict;
 #use warnings;
 
-#now implement Robot Framework keyword class methods below
+# now implement Robot Framework keyword class methods below...
+
+# this example library is a port of the Python reference version:
+# http://robotframework.googlecode.com/hg/tools/remoteserver/example/examplelibrary.py
+# it is by no means an exact functional port, but close enough.
 
 sub count_items_in_directory{
 	my ($self, $path) = @_;
@@ -21,6 +25,13 @@ sub count_items_in_directory{
 	$fileRules->not( File::Find::Rule->new->name( qr/^\.+$/ ) );
 	my @files = $fileRules->in($path);
 	return scalar(@subdirs) + scalar(@files);
+	
+	# USEFUL NOTES:
+	# to return array data, return as array reference "return \@myArray;"
+	# to return hash data, return as hash reference "return \%myHash;"
+	# returning a number will be treated as number
+	# returning a string will be treated as a string
+	# returning an empty string or "undef" will be treated as empty string
 }
 
 sub strings_should_be_equal{
@@ -31,5 +42,5 @@ sub strings_should_be_equal{
 	}
 }
 
-#ending script/module return value to append below
+# ending script/module return value to append below
 1;
