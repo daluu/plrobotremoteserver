@@ -170,6 +170,7 @@ sub start_server {
                   LocalAddr => $self->{_addr},
                   LocalPort => $self->{_port},
                   );
+	# now listening on HTTP resource path "/RPC2"
 	#return $svr; # Never returns, stop server 
 	# w/ stop_remote_server keyword, or Ctrl+C, etc.
 }
@@ -188,6 +189,7 @@ sub start_server {
 #                           signature => [ 'struct array' ] });
 #	$srv->server_loop; # Never returns, stop server 
 	# w/ stop_remote_server keyword, or Ctrl+C, etc.
+	# now listening on HTTP resource path "/RPC2"?
 #}
 
 sub doShutdown {
