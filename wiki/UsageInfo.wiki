@@ -8,7 +8,9 @@ http://code.google.com/p/robotframework/wiki/RemoteLibrary
 
 http://robotframework.googlecode.com/hg/tools/remoteserver/example/examplelibrary.py
 
-Remote server requires the [http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm Frontier XML-RPC Daemon Perl module]. It can also be modified to use [http://search.cpan.org/dist/RPC-XML/lib/RPC/XML/Server.pm RPC::XML::Server] module instead, though this version hasn't been tested. I've found it easier to install and get up and running with the Frontier module.
+Remote server requires the [http://search.cpan.org/~kmacleod/Frontier-RPC-0.07b4/lib/Frontier/Daemon.pm Frontier XML-RPC Daemon Perl module]. It can also be modified to use [http://search.cpan.org/dist/RPC-XML/lib/RPC/XML/Server.pm RPC::XML::Server] module or some other XML-RPC module instead. I've found it easier to install and get up and running with the Frontier module.
+
+Remote server also requires the [http://search.cpan.org/~dagolden/Capture-Tiny-0.21/lib/Capture/Tiny.pm Capture Tiny Perl module] for capturing standard output and standard error to return back to Robot Framework (or your XML-RPC client).
 
 To use it, see  [http://code.google.com/p/plrobotremoteserver/source/browse/trunk/exampleremoteserver.pl exampleremoteserver.pl] for details. 
 
@@ -42,12 +44,13 @@ Finally, you start the server by executing the start server method. Here is an e
   my $remote_svr = new RobotRemoteServer("ExampleLibrary");
 
   $remote_svr->start_server();
+  #listening on resource path "/RPC2"
 
   #ending script/module return value to append below
   1;
 }}}
 
-To query or communicate with the XML-RPC (remote library) server, you have to use the web service URL format of http://host:port/RPC2. This means that the URL to remote library for Robot Framework tests/use will be of that format. Once server is started, you can call test library keywords offered by the server from Robot Framework. 
+*To query or communicate with the XML-RPC (remote library) server, you have to use the web service URL format of http://host:port/RPC2.* This means that the URL to remote library for Robot Framework tests/use will be of that format. Once server is started, you can call test library keywords offered by the server from Robot Framework. 
 
 =Testing the example remote library=
 
@@ -55,7 +58,7 @@ Run
 
   `perl exampleremoteserver.pl`
 
-Then run the [http://robotframework.googlecode.com/svn/trunk/tools/remoteserver/example/remote_tests.html example tests] for remote libraries/servers available from [http://www.robotframework.org Robot Framework] project. But do modify the remote server URL in the test case file to http://localhost:${PORT}/RPC2 before running the test.
+Then run the [http://robotframework.googlecode.com/svn/trunk/tools/remoteserver/example/remote_tests.html example tests] for remote libraries/servers available from [http://www.robotframework.org Robot Framework] project. *But do modify the remote server URL in the test case file to http://localhost:${PORT}/RPC2 before running the test.*
 
 To test stop remote server functionality, you may wish to add a test case, test step, or test case/suite teardown like this:
 
@@ -89,10 +92,6 @@ For this case, you would need to write a wrapper module that provides the remote
 =Known Issues=
 
   * *get_keyword_names* may return extra Perl library methods that weren't intended to be used by [http://www.robotframework.org Robot Framework] (e.g. internal methods), so just ignore them. Bear in mind that if you don't debug the remote library, you won't notice this issue anyways as [http://www.robotframework.org Robot Framework] doesn't explicitly dump a list of available keywords for the end user to see, except for library documentation generation with libdoc.py ([http://code.google.com/p/plrobotremoteserver/issues/detail?id=4 Issue 4])
-
-  * keyword output will always be blank except in cases of exceptions being raised. Currently no real definition of what constitutes "output" from a keyword. ([http://code.google.com/p/plrobotremoteserver/issues/detail?id=1 issue 1])
-
-  * remote library keywords will always return as PASS except in case of exceptions
 
 =Tips for Debugging=
 
